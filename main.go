@@ -103,17 +103,17 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 		// Notes
 		note1 := "- Bot will return a fortune based on unfathomable cosmic events. \n"
-		note2 := "- Commands are case-sensitive. They must be in lower-case :) \n"
+		note2 := "- Commands are case-sensitive. They must be in lower-case (except the sign name, that is optional) :) \n"
 		note3 := "- Dev: Narsiq#5638. DM me for requests/questions/love. \n"
 
 		// Commands
 		commandHelp := "❔  " + prefix + "help : Provides a list of my commands. \n"
-		commandHoroscope := "🦶🏽  " + prefix + ": Return a fortune based on unfathomable cosmic events. \n"
-		commandInvite := "🔗  " + prefix + "invite : A invite link for the FortuneCookie Bot. \n"
-		commandSite := "🔗  " + prefix + "site : Link to the FortuneCookie website. \n"
-		commandSupport := "✨  " + prefix + "support : Link to the FortuneCookie Patreon. \n"
-		commandStats := "📊  " + prefix + "stats : Check out FortuneCookie stats. \n"
-		commandVersion := "🤖  " + prefix + "version : Current FortuneCookie version. \n"
+		commandHoroscope := "🦶🏽  " + prefix + ": Return your Horoscope based on cosmic events. \n"
+		commandInvite := "🔗  " + prefix + "invite : A invite link for the Horoscope Bot. \n"
+		commandSite := "🔗  " + prefix + "site : Link to the Horoscope website. \n"
+		commandSupport := "✨  " + prefix + "support : Link to the Horoscope Patreon. \n"
+		commandStats := "📊  " + prefix + "stats : Check out Horoscope stats. \n"
+		commandVersion := "🤖  " + prefix + "version : Current Horoscope version. \n"
 
 		// Build sub messages
 		notesMessage := note1 + note2 + note3
