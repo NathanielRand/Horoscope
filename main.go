@@ -17,7 +17,7 @@ import (
 )
 
 const prefix string = "!hs"
-const version string = "1.1.0"
+const version string = "1.1.3"
 
 // Result struct contains shortened URL data.
 type apiResponse struct {
@@ -94,6 +94,18 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	trimmedPrefixCommand := strings.TrimPrefix(content, prefix)
 	trimmedSpaceCommand := strings.Title(strings.TrimSpace(trimmedPrefixCommand))
 
+	if strings.Contains(content, prefix) && trimmedSpaceCommand == "" {
+		// Build start vote message
+		author := m.Author.Username
+		message := "Yo " + author + "..." + "looks like you forgot to add a sign. (example: !hs Aquarius). Give it another try, you got this."
+
+		// Send start vote message
+		_, err := s.ChannelMessageSendReply(m.ChannelID, message, m.Reference())
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+
 	if strings.Contains(content, prefix+"help") {
 		// Build help message
 		author := m.Author.Username
@@ -102,14 +114,14 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		commandHelpTitle := "Looks like you need a hand. Check out my goodies below... \n \n"
 
 		// Notes
-		note1 := "- Bot will return a fortune based on unfathomable cosmic events. \n"
+		note1 := "- Bot will return a Horoscope based on cosmic events. \n"
 		note2 := "- Commands are case-sensitive. They must be in lower-case (except the sign name, that is optional) :) \n"
 		note3 := "- Dev: Narsiq#5638. DM me for requests/questions/love. \n"
 
 		// Commands
 		commandHelp := "❔  " + prefix + "help : Provides a list of my commands. \n"
-		commandHoroscope := "🦶🏽  " + prefix + ": Return your Horoscope based on cosmic events. \n"
-		commandInvite := "🔗  " + prefix + "invite : A invite link for the Horoscope Bot. \n"
+		commandHoroscope := "🦶🏽  " + prefix + " <Sign> : Return your Horoscope based on cosmic events. Do not include '<>' in the command. \n"
+		commandInvite := "🔗  " + prefix + "invite : Invite link for the Horoscope Bot. \n"
 		commandSite := "🔗  " + prefix + "site : Link to the Horoscope website. \n"
 		commandSupport := "✨  " + prefix + "support : Link to the Horoscope Patreon. \n"
 		commandStats := "📊  " + prefix + "stats : Check out Horoscope stats. \n"
@@ -184,7 +196,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	}
 
-	if strings.EqualFold(content, prefix+"invite") {
+	if strings.Contains(content, prefix+"invite") {
 		author := m.Author.Username
 
 		// // Build start vote message
@@ -197,11 +209,22 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	}
 
-	if strings.Contains(content, prefix+trimmedPrefixCommand) {
+	if strings.Contains(content, prefix+trimmedPrefixCommand) && trimmedSpaceCommand != "" {
 
+		// Check is command matches a symbol, if not, return
+		symbol := getSymbol(trimmedSpaceCommand)
+		if symbol == "?" {
+			return
+		}
+
+		// Make api call while passing in sign command
 		responseAPIBody := callAPI(trimmedSpaceCommand)
 		var resultObject apiResponse
-		json.Unmarshal(responseAPIBody, &resultObject)
+		err := json.Unmarshal(responseAPIBody, &resultObject)
+		if err != nil {
+			returnErrorMessage(s, m)
+			return
+		}
 
 		// Store gathered data in a object and assign to var
 		data := apiResponse{
@@ -214,8 +237,6 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			LuckyTime:     resultObject.LuckyTime,
 			Mood:          resultObject.Mood,
 		}
-
-		symbol := getSymbol(trimmedSpaceCommand)
 
 		// Grab author
 		author := m.Author.Username
@@ -234,7 +255,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		messageFull := "``` \n" + messageGreeting + messageTitle + messageCurrentDate + messageDescription + messageMood + messageColor + messageCompatibility + messageLuckyNumber + messageLuckyTime + messageDateRange + "\n ```"
 
 		// Send start vote message
-		_, err := s.ChannelMessageSendReply(m.ChannelID, messageFull, m.Reference())
+		_, err = s.ChannelMessageSendReply(m.ChannelID, messageFull, m.Reference())
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -289,7 +310,20 @@ func getSymbol(command string) string {
 		symbol = "♒︎"
 	case "Pisces":
 		symbol = "♓︎"
+	default:
+		symbol = "?"
 	}
 
 	return symbol
+}
+
+func returnErrorMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
+	// Build start vote message
+	message := "Horoscope bot encountered an unknown error. Development team has been notified. Sorry we suck..."
+
+	// Send start vote message
+	_, err := s.ChannelMessageSendReply(m.ChannelID, message, m.Reference())
+	if err != nil {
+		fmt.Println(err)
+	}
 }
